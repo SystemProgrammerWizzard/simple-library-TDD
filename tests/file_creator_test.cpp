@@ -27,27 +27,88 @@ protected:
     }
 };
 
-TEST_F(file_creator_test, write_and_read_data_from_file)
-{
-    std::string test_dir = "test_output";
-    std::filesystem::create_directory(test_dir);
+    TEST_F(file_creator_test, create_file_with_valid_json_should_pass)
+    {
+        std::string test_dir = "test_output";
+        std::filesystem::create_directory(test_dir);
+        std::string file_path = test_dir;
+        std::string file_name = "valid.json";
 
-    std::string file_path = test_dir;
-    std::string file_name = "test.json";
+        seneca::example::file_creator creator(file_path);
+
+        nlohmann::json valid_json = {
+            {"students", {
+                { {"id", 1}, {"name", "Dave"} }
+            }}
+        };
+
+        EXPECT_NO_THROW({
+            creator.create_file(valid_json, file_name);
+        });
+
+        std::filesystem::remove_all(test_dir);
+    }
+
+    TEST_F(file_creator_test, create_file_with_invalid_schema_should_throw)
+    {
+        std::string test_dir = "test_output";
+        std::filesystem::create_directory(test_dir);
+        std::string file_path = test_dir;
+        std::string file_name = "invalid_schema.json";
+
+        seneca::example::file_creator creator(file_path);
+
+        nlohmann::json invalid_json = {
+            {"name", "NotValid"}
+        };
+
+        EXPECT_THROW({
+            creator.create_file(invalid_json, file_name);
+        }, std::runtime_error);
+
+        std::filesystem::remove_all(test_dir);
+    }
+
+    TEST_F(file_creator_test, create_file_to_nonexistent_directory_should_throw)
+{
+    std::string file_path = "non_existent_dir";
+    std::string file_name = "fail.json";
 
     seneca::example::file_creator creator(file_path);
 
-    nlohmann::json json_data = {
-        {"name", "Dave"},
-        {"language", "C++"}
+    nlohmann::json valid_json = {
+        {"students", {
+            { {"id", 42}, {"name", "Alice"} }
+        }}
     };
 
-    creator.create_file(json_data, file_name);
+    EXPECT_THROW({
+        creator.create_file(valid_json, file_name);
+    }, std::runtime_error);
+}
 
-    auto read_data = creator.read_file(file_name);
+    TEST_F(file_creator_test, read_file_should_return_json)
+    {
+        std::string test_dir = "test_output";
+        std::filesystem::create_directory(test_dir);
+        std::string file_path = test_dir;
+        std::string file_name = "read.json";
 
-    EXPECT_EQ(read_data["name"], "Dave");
-    EXPECT_EQ(read_data["language"], "C++");
+        seneca::example::file_creator creator(file_path);
 
-    std::filesystem::remove_all(test_dir);
+        nlohmann::json valid_json = {
+            {"students", {
+                { {"id", 1}, {"name", "Dave"} }
+            }}
+        };
+
+        creator.create_file(valid_json, file_name);
+
+        nlohmann::json result = creator.read_file(file_name);
+
+        EXPECT_EQ(result["students"][0]["id"], 1);
+        EXPECT_EQ(result["students"][0]["name"], "Dave");
+
+        std::filesystem::remove_all(test_dir);
+    }
 }
