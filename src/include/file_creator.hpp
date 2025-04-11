@@ -1,19 +1,20 @@
+#pragma once
+
 #include <iostream>
+#include <string>
 #include <nlohmann/json.hpp>
 
-namespace seneca::example
-{
+namespace seneca::example {
 
-class file_creator{
+class file_creator {
 public:
-    file_creator(std::string& file_path);
+    explicit file_creator(std::string& file_path);
     file_creator() = delete;
-    //Rule of 5
-    ~file_creator();
 
+    // Rule of 5
+    ~file_creator();
     file_creator(const file_creator&) = delete;
     file_creator(file_creator&&) = delete;
-
     file_creator& operator=(const file_creator&) = delete;
     file_creator& operator=(file_creator&&) = delete;
 
@@ -22,7 +23,6 @@ public:
 
 private:
     std::string m_file_path;
-    int m_fd;
 };
 
-} //namepace seneca::example
+} // namespace seneca::example
